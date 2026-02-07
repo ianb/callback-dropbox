@@ -78,7 +78,7 @@ export async function createPairingCode(
 
   await env.DB.prepare(
     "INSERT INTO pairing_codes (code, channel_id, api_key, encrypted_channel_key, expires_at) VALUES (?, ?, ?, ?, ?)"
-  ).bind(code, channelId, clientApiKey, body.encryptedChannelKey, expiresAt);
+  ).bind(code, channelId, clientApiKey, body.encryptedChannelKey, expiresAt).run();
 
   return json({ code, expiresAt }, 201);
 }
