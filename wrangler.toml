@@ -5,4 +5,4 @@ compatibility_date = "2024-12-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "callback-dropbox"
-database_id = "placeholder-replace-after-create"
+database_id = "95462ce1-700b-49cc-9db8-d8e4491c9cf6"
