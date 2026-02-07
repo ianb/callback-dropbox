@@ -1,0 +1,31 @@
+{
+  "name": "callback-dropbox",
+  "version": "0.0.1",
+  "description": "Cloud message relay between callback-box and callback-clerk",
+  "type": "module",
+  "exports": {
+    "./client": "./dist/client/index.js",
+    "./worker": "./dist/worker/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tap test/*.test.ts",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4",
+    "tap": "^21",
+    "typescript": "^5",
+    "wrangler": "^3"
+  },
+  "tap": {
+    "plugin": [
+      "!@tapjs/node-serialize"
+    ],
+    "coverage-report": ["none"],
+    "statements": 0,
+    "branches": 0,
+    "functions": 0,
+    "lines": 0
+  }
+}
