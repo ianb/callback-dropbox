@@ -18,8 +18,8 @@ CREATE TABLE messages (
   channel_id TEXT NOT NULL,
   sender TEXT NOT NULL,
   content_type TEXT,
-  body BLOB NOT NULL,
-  nonce BLOB NOT NULL,
+  body TEXT NOT NULL,
+  nonce TEXT NOT NULL,
   created_at TEXT NOT NULL,
   FOREIGN KEY (channel_id) REFERENCES channels(id)
 );
@@ -28,7 +28,7 @@ CREATE TABLE pairing_codes (
   code TEXT PRIMARY KEY,
   channel_id TEXT NOT NULL,
   api_key TEXT NOT NULL,
-  encrypted_channel_key BLOB NOT NULL,
+  encrypted_channel_key TEXT NOT NULL,
   expires_at TEXT NOT NULL,
   used INTEGER DEFAULT 0
 );

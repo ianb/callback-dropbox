@@ -160,8 +160,8 @@ export async function getMessages(
       id: string;
       sender: string;
       content_type: string | null;
-      body: ArrayBuffer;
-      nonce: ArrayBuffer;
+      body: string;
+      nonce: string;
       created_at: string;
     }>();
 
@@ -169,8 +169,8 @@ export async function getMessages(
     id: row.id,
     sender: row.sender,
     contentType: row.content_type,
-    body: arrayBufferToBase64(row.body),
-    nonce: arrayBufferToBase64(row.nonce),
+    body: row.body,
+    nonce: row.nonce,
     createdAt: row.created_at,
   }));
 
@@ -204,10 +204,10 @@ export async function postMessage(
     auth.channelId,
     body.sender,
     body.contentType ?? null,
-    base64ToArrayBuffer(body.body),
-    base64ToArrayBuffer(body.nonce),
+    body.body,
+    body.nonce,
     now
-  );
+  ).run();
 
   return json({ id, createdAt: now }, 201);
 }
@@ -231,17 +231,3 @@ export async function deleteMessage(
   return json({ deleted: true });
 }
 
-// Helpers
-
-function arrayBufferToBase64(buf: ArrayBuffer): string {
-  return btoa(String.fromCharCode(...new Uint8Array(buf)));
-}
-
-function base64ToArrayBuffer(b64: string): ArrayBuffer {
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
