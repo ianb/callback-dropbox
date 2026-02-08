@@ -22,10 +22,15 @@
     "plugin": [
       "!@tapjs/node-serialize"
     ],
-    "coverage-report": ["none"],
+    "coverage-report": [
+      "none"
+    ],
     "statements": 0,
     "branches": 0,
     "functions": 0,
     "lines": 0
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
   }
 }

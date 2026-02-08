@@ -23,3 +23,18 @@ export type {
   PairingCodeResult,
   PairingRedemptionResult,
 } from "./pairing.js";
+
+export {
+  TabInfoSchema,
+  TabsMessageSchema,
+  MemoMessageSchema,
+  OpenTabMessageSchema,
+  DropboxMessageSchema,
+} from "./schemas.js";
+export type {
+  TabInfo,
+  TabsMessage,
+  MemoMessage,
+  OpenTabMessage,
+  DropboxMessage,
+} from "./schemas.js";
