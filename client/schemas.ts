@@ -30,6 +30,13 @@ export const MemoMessageSchema = z.object({
   timestamp: z.string().optional(),
 });
 
+export const SaveToBriefMessageSchema = z.object({
+  type: z.literal("save-to-brief"),
+  url: z.string(),
+  title: z.string(),
+  timestamp: z.string().optional(),
+});
+
 // -- Box → Clerk messages --
 
 export const OpenTabMessageSchema = z.object({
@@ -44,6 +51,7 @@ export const OpenTabMessageSchema = z.object({
 export const DropboxMessageSchema = z.discriminatedUnion("type", [
   TabsMessageSchema,
   MemoMessageSchema,
+  SaveToBriefMessageSchema,
   OpenTabMessageSchema,
 ]);
 
@@ -52,5 +60,6 @@ export const DropboxMessageSchema = z.discriminatedUnion("type", [
 export type TabInfo = z.infer<typeof TabInfoSchema>;
 export type TabsMessage = z.infer<typeof TabsMessageSchema>;
 export type MemoMessage = z.infer<typeof MemoMessageSchema>;
+export type SaveToBriefMessage = z.infer<typeof SaveToBriefMessageSchema>;
 export type OpenTabMessage = z.infer<typeof OpenTabMessageSchema>;
 export type DropboxMessage = z.infer<typeof DropboxMessageSchema>;

@@ -28,6 +28,7 @@ export {
   TabInfoSchema,
   TabsMessageSchema,
   MemoMessageSchema,
+  SaveToBriefMessageSchema,
   OpenTabMessageSchema,
   DropboxMessageSchema,
 } from "./schemas.js";
@@ -35,6 +36,7 @@ export type {
   TabInfo,
   TabsMessage,
   MemoMessage,
+  SaveToBriefMessage,
   OpenTabMessage,
   DropboxMessage,
 } from "./schemas.js";
