@@ -27,6 +27,8 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [flashing, setFlashing] = useState(false);
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const isMobile = "ontouchstart" in window;
 
   const apiRef = useRef(new CaptureApi(credentials));
   const recorderRef = useRef<ChunkedRecorder | null>(null);
@@ -177,6 +179,8 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       if (videoRef.current) {
         await cameraRef.current.start(videoRef.current);
         setCameraOn(true);
+        const devices = await CameraCapture.getVideoDevices();
+        setVideoDevices(devices);
       }
     } catch (err) {
       setError(`Camera access failed: ${err instanceof Error ? err.message : "unknown"}`);
@@ -193,10 +197,13 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
   }, [cameraOn, startCamera]);
 
   const flipCamera = useCallback(async () => {
-    if (cameraOn) {
+    if (!cameraOn) return;
+    if (!isMobile && videoDevices.length > 1) {
+      await cameraRef.current.cycleDevice(videoDevices);
+    } else {
       await cameraRef.current.flip();
     }
-  }, [cameraOn]);
+  }, [cameraOn, isMobile, videoDevices]);
 
   const takePhoto = useCallback(async () => {
     if (!sessionId) return;
@@ -214,6 +221,22 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
     setPhotoStates((prev) => [...prev, "uploading"]);
     uploadPhoto({ sessionId, index, blob, startedAt, source });
   }, [sessionId, cameraOn, photoStates.length, startCamera, triggerFlash, uploadPhoto]);
+
+  // Keyboard shortcuts: spacebar = photo, R = toggle recording
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === " ") {
+        e.preventDefault();
+        takePhoto();
+      } else if (e.key === "r" || e.key === "R") {
+        e.preventDefault();
+        toggleRecording();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [takePhoto, toggleRecording]);
 
   const pickFromGallery = useCallback(() => {
     galleryRef.current?.click();

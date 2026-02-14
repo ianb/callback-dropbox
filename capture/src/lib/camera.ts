@@ -4,6 +4,12 @@ export class CameraCapture {
   private stream: MediaStream | null = null;
   private videoEl: HTMLVideoElement | null = null;
   facingMode: FacingMode = "environment";
+  private currentDeviceId: string | null = null;
+
+  static async getVideoDevices(): Promise<MediaDeviceInfo[]> {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((d) => d.kind === "videoinput");
+  }
 
   async start(videoEl: HTMLVideoElement, facing?: FacingMode): Promise<void> {
     if (facing) this.facingMode = facing;
@@ -11,6 +17,20 @@ export class CameraCapture {
 
     this.stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: this.facingMode },
+      audio: false,
+    });
+
+    this.currentDeviceId = this.stream.getVideoTracks()[0]?.getSettings().deviceId ?? null;
+    videoEl.srcObject = this.stream;
+    await videoEl.play();
+  }
+
+  async startWithDeviceId(videoEl: HTMLVideoElement, deviceId: string): Promise<void> {
+    this.videoEl = videoEl;
+    this.currentDeviceId = deviceId;
+
+    this.stream = await navigator.mediaDevices.getUserMedia({
+      video: { deviceId: { exact: deviceId } },
       audio: false,
     });
 
@@ -24,6 +44,14 @@ export class CameraCapture {
     if (this.videoEl) {
       await this.start(this.videoEl);
     }
+  }
+
+  async cycleDevice(devices: MediaDeviceInfo[]): Promise<void> {
+    if (devices.length < 2 || !this.videoEl) return;
+    const currentIdx = devices.findIndex((d) => d.deviceId === this.currentDeviceId);
+    const nextIdx = (currentIdx + 1) % devices.length;
+    this.stopStream();
+    await this.startWithDeviceId(this.videoEl, devices[nextIdx].deviceId);
   }
 
   takePhoto(): { blob: Promise<Blob | null>; source: string } {
