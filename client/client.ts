@@ -95,7 +95,11 @@ export class DropboxClient {
     const decrypted: DecryptedMessage[] = [];
 
     for (const msg of messages) {
-      const plaintext = await decrypt(k, msg.body, msg.nonce);
+      const plaintext = await decrypt({
+        key: k,
+        body: msg.body,
+        nonce: msg.nonce,
+      });
       decrypted.push({
         id: msg.id,
         sender: msg.sender,

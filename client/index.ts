@@ -5,6 +5,9 @@ export type {
   EncryptedMessage,
 } from "./client.js";
 
+export { CaptureClient } from "./capture-client.js";
+export type { CaptureClientOptions } from "./capture-client.js";
+
 export {
   generateChannelKey,
   exportKey,
@@ -31,6 +34,9 @@ export {
   SaveToBriefMessageSchema,
   OpenTabMessageSchema,
   DropboxMessageSchema,
+  CaptureFileSchema,
+  CaptureManifestSchema,
+  CaptureSessionSummarySchema,
 } from "./schemas.js";
 export type {
   TabInfo,
@@ -39,4 +45,7 @@ export type {
   SaveToBriefMessage,
   OpenTabMessage,
   DropboxMessage,
+  CaptureFile,
+  CaptureManifest,
+  CaptureSessionSummary,
 } from "./schemas.js";

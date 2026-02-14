@@ -42,11 +42,14 @@ export async function encrypt(
   };
 }
 
-export async function decrypt(
-  key: CryptoKey,
-  body: string,
-  nonce: string
-): Promise<string> {
+export interface DecryptParams {
+  key: CryptoKey;
+  body: string;
+  nonce: string;
+}
+
+export async function decrypt(params: DecryptParams): Promise<string> {
+  const { key, body, nonce } = params;
   const ciphertext = base64ToArrayBuffer(body);
   const iv = base64ToArrayBuffer(nonce);
 

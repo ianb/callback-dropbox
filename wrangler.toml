@@ -2,7 +2,17 @@ name = "callback-dropbox"
 main = "worker/index.ts"
 compatibility_date = "2024-12-01"
 
+[assets]
+directory = "capture/dist"
+not_found_handling = "single-page-application"
+binding = "ASSETS"
+run_worker_first = true
+
 [[d1_databases]]
 binding = "DB"
 database_name = "callback-dropbox"
 database_id = "95462ce1-700b-49cc-9db8-d8e4491c9cf6"
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "callback-capture"

@@ -93,8 +93,16 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
     setTimeout(() => setFlashing(false), 250);
   }, []);
 
+  interface UploadPhotoParams {
+    sessionId: string;
+    index: number;
+    blob: Blob;
+    startedAt: string;
+    source: string;
+  }
+
   const uploadPhoto = useCallback(
-    async (sid: string, index: number, blob: Blob, startedAt: string, source: string) => {
+    async ({ sessionId, index, blob, startedAt, source }: UploadPhotoParams) => {
       const ext = blob.type.includes("png") ? "png" : "jpg";
       const filename = `photo-${String(index + 1).padStart(3, "0")}.${ext}`;
       setPhotoStates((prev) => {
@@ -103,7 +111,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
         return next;
       });
       try {
-        await apiRef.current.uploadFile(sid, filename, blob, startedAt, source);
+        await apiRef.current.uploadFile({ sessionId, filename, blob, startedAt, source });
         setPhotoStates((prev) => {
           const next = [...prev];
           next[index] = "uploaded";
@@ -120,13 +128,19 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
     []
   );
 
+  interface HandleChunkParams {
+    blob: Blob;
+    index: number;
+    startedAt: string;
+  }
+
   const handleChunk = useCallback(
-    (blob: Blob, index: number, startedAt: string) => {
+    ({ blob, index, startedAt }: HandleChunkParams) => {
       if (!sessionId) return;
       const filename = `audio-${String(index + 1).padStart(3, "0")}.webm`;
       setAudioChunks((prev) => [...prev, { index, state: "uploading" }]);
       apiRef.current
-        .uploadFile(sessionId, filename, blob, startedAt, "microphone")
+        .uploadFile({ sessionId, filename, blob, startedAt, source: "microphone" })
         .then(() => {
           setAudioChunks((prev) =>
             prev.map((c) => (c.index === index ? { ...c, state: "uploaded" } : c))
@@ -148,7 +162,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       setRecording(false);
     } else {
       try {
-        const recorder = new ChunkedRecorder(handleChunk);
+        const recorder = new ChunkedRecorder({ onChunk: handleChunk });
         recorderRef.current = recorder;
         await recorder.start();
         setRecording(true);
@@ -198,7 +212,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
     const index = photoStates.length;
     const startedAt = new Date().toISOString();
     setPhotoStates((prev) => [...prev, "uploading"]);
-    uploadPhoto(sessionId, index, blob, startedAt, source);
+    uploadPhoto({ sessionId, index, blob, startedAt, source });
   }, [sessionId, cameraOn, photoStates.length, startCamera, triggerFlash, uploadPhoto]);
 
   const pickFromGallery = useCallback(() => {
@@ -212,7 +226,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
         const index = photoStates.length;
         const startedAt = new Date().toISOString();
         setPhotoStates((prev) => [...prev, "uploading"]);
-        uploadPhoto(sessionId, index, file, startedAt, "gallery");
+        uploadPhoto({ sessionId, index, blob: file, startedAt, source: "gallery" });
       }
       e.target.value = "";
     },

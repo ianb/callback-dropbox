@@ -32,3 +32,16 @@ CREATE TABLE pairing_codes (
   expires_at TEXT NOT NULL,
   used INTEGER DEFAULT 0
 );
+
+CREATE TABLE capture_sessions (
+  id TEXT PRIMARY KEY,
+  channel_id TEXT NOT NULL,
+  started_at TEXT NOT NULL,
+  ended_at TEXT,
+  status TEXT NOT NULL DEFAULT 'active',
+  file_count INTEGER NOT NULL DEFAULT 0,
+  last_activity_at TEXT,
+  finalize_token TEXT,
+  FOREIGN KEY (channel_id) REFERENCES channels(id)
+);
+CREATE INDEX idx_capture_sessions_channel ON capture_sessions(channel_id, status);

@@ -35,7 +35,7 @@ t.test("encrypt and decrypt round-trip", async (t) => {
   t.type(nonce, "string");
   t.not(body, plaintext, "body should be encrypted");
 
-  const decrypted = await decrypt(key, body, nonce);
+  const decrypted = await decrypt({ key, body, nonce });
   t.equal(decrypted, plaintext);
 });
 
@@ -44,7 +44,7 @@ t.test("decrypt with wrong key fails", async (t) => {
   const key2 = await generateChannelKey();
   const { body, nonce } = await encrypt(key1, "secret");
 
-  await t.rejects(() => decrypt(key2, body, nonce));
+  await t.rejects(() => decrypt({ key: key2, body, nonce }));
 });
 
 t.test("each encryption produces unique nonce", async (t) => {

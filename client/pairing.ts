@@ -17,6 +17,13 @@ export interface PairingRedemptionResult {
   channelKey: string; // base64-encoded AES key
 }
 
+export interface GeneratePairingCodeParams {
+  workerUrl: string;
+  apiKey: string;
+  channelId: string;
+  channelKey: string; // base64
+}
+
 // Step 1: Agent creates a channel and gets credentials + channel key
 export async function createChannel(
   workerUrl: string
@@ -44,11 +51,9 @@ export async function createChannel(
 
 // Step 2: Agent generates a pairing code for a client to use
 export async function generatePairingCode(
-  workerUrl: string,
-  apiKey: string,
-  channelId: string,
-  channelKey: string // base64
+  params: GeneratePairingCodeParams
 ): Promise<PairingCodeResult> {
+  const { workerUrl, apiKey, channelId, channelKey } = params;
   // The channel key is passed as encryptedChannelKey — in this simple scheme
   // it's transmitted in plaintext over HTTPS. For stronger protection, the agent
   // could encrypt it with a key derived from the pairing code, but HTTPS is

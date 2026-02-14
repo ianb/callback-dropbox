@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "worker/index.ts",
+    "client/client.ts",
+    "capture/main.tsx"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}"
+  ],
+  "exclude": [
+    "enumMembers",
+    "duplicates",
+    "types"
+  ]
+}

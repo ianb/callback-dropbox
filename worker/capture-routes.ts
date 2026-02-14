@@ -39,12 +39,17 @@ interface CaptureFile {
   source: string;
 }
 
+export interface CreateSessionParams {
+  request: Request;
+  env: Env;
+  auth: AuthResult;
+}
+
 // POST /api/capture/sessions — create a new capture session
 export async function createSession(
-  _request: Request,
-  env: Env,
-  auth: AuthResult
+  params: CreateSessionParams
 ): Promise<Response> {
+  const { env, auth } = params;
   const sessionId = generateId();
   const finalizeToken = generateToken();
   const now = new Date().toISOString();
@@ -74,13 +79,18 @@ export async function createSession(
   return json({ sessionId, finalizeToken, startedAt: now }, 201);
 }
 
+export interface UploadFileParams {
+  request: Request;
+  env: Env;
+  auth: AuthResult;
+  sessionId: string;
+}
+
 // POST /api/capture/sessions/:id/upload — upload a media file
 export async function uploadFile(
-  request: Request,
-  env: Env,
-  auth: AuthResult,
-  sessionId: string
+  params: UploadFileParams
 ): Promise<Response> {
+  const { request, env, auth, sessionId } = params;
   const filename = request.headers.get("X-Capture-Filename");
   const startedAt = request.headers.get("X-Capture-Started-At");
   const source = request.headers.get("X-Capture-Source") || "unknown";
@@ -142,14 +152,19 @@ export async function uploadFile(
   return json({ uploaded: filename, size: body.byteLength });
 }
 
+export interface FinalizeSessionParams {
+  request: Request;
+  env: Env;
+  auth: AuthResult | null;
+  sessionId: string;
+}
+
 // POST /api/capture/sessions/:id/finalize — end a session
 // Supports both Bearer auth and ?token= query param (for sendBeacon)
 export async function finalizeSession(
-  request: Request,
-  env: Env,
-  auth: AuthResult | null,
-  sessionId: string
+  params: FinalizeSessionParams
 ): Promise<Response> {
+  const { request, env, auth, sessionId } = params;
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
 
@@ -206,12 +221,17 @@ export async function finalizeSession(
   return json({ finalized: true, endedAt: now });
 }
 
+export interface ListSessionsParams {
+  request: Request;
+  env: Env;
+  auth: AuthResult;
+}
+
 // GET /api/capture/sessions — list sessions for this channel
 export async function listSessions(
-  request: Request,
-  env: Env,
-  auth: AuthResult
+  params: ListSessionsParams
 ): Promise<Response> {
+  const { request, env, auth } = params;
   const url = new URL(request.url);
   const status = url.searchParams.get("status");
 
@@ -251,13 +271,18 @@ export async function listSessions(
   return json({ sessions });
 }
 
+export interface GetManifestParams {
+  request: Request;
+  env: Env;
+  auth: AuthResult;
+  sessionId: string;
+}
+
 // GET /api/capture/sessions/:id/manifest — get session manifest
 export async function getManifest(
-  _request: Request,
-  env: Env,
-  auth: AuthResult,
-  sessionId: string
+  params: GetManifestParams
 ): Promise<Response> {
+  const { env, auth, sessionId } = params;
   const key = `${auth.channelId}/${sessionId}/manifest.json`;
   const obj = await env.MEDIA.get(key);
 
@@ -270,14 +295,19 @@ export async function getManifest(
   });
 }
 
+export interface GetFileParams {
+  request: Request;
+  env: Env;
+  auth: AuthResult;
+  sessionId: string;
+  filename: string;
+}
+
 // GET /api/capture/sessions/:id/files/:name — download a file
 export async function getFile(
-  _request: Request,
-  env: Env,
-  auth: AuthResult,
-  sessionId: string,
-  filename: string
+  params: GetFileParams
 ): Promise<Response> {
+  const { env, auth, sessionId, filename } = params;
   const key = `${auth.channelId}/${sessionId}/${filename}`;
   const obj = await env.MEDIA.get(key);
 
@@ -293,13 +323,18 @@ export async function getFile(
   });
 }
 
+export interface DeleteSessionParams {
+  request: Request;
+  env: Env;
+  auth: AuthResult;
+  sessionId: string;
+}
+
 // DELETE /api/capture/sessions/:id — delete session and all R2 files
 export async function deleteSession(
-  _request: Request,
-  env: Env,
-  auth: AuthResult,
-  sessionId: string
+  params: DeleteSessionParams
 ): Promise<Response> {
+  const { env, auth, sessionId } = params;
   // Verify session belongs to this channel
   const session = await env.DB.prepare(
     "SELECT id FROM capture_sessions WHERE id = ? AND channel_id = ?"

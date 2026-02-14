@@ -55,6 +55,33 @@ export const DropboxMessageSchema = z.discriminatedUnion("type", [
   OpenTabMessageSchema,
 ]);
 
+// -- Capture schemas --
+
+export const CaptureFileSchema = z.object({
+  name: z.string(),
+  type: z.string(),
+  startedAt: z.string(),
+  size: z.number(),
+  source: z.string(),
+});
+
+export const CaptureManifestSchema = z.object({
+  sessionId: z.string(),
+  channelId: z.string(),
+  startedAt: z.string(),
+  endedAt: z.string().nullable(),
+  files: z.array(CaptureFileSchema),
+});
+
+export const CaptureSessionSummarySchema = z.object({
+  id: z.string(),
+  startedAt: z.string(),
+  endedAt: z.string().nullable(),
+  status: z.string(),
+  fileCount: z.number(),
+  lastActivityAt: z.string().nullable(),
+});
+
 // -- Inferred types --
 
 export type TabInfo = z.infer<typeof TabInfoSchema>;
@@ -63,3 +90,7 @@ export type MemoMessage = z.infer<typeof MemoMessageSchema>;
 export type SaveToBriefMessage = z.infer<typeof SaveToBriefMessageSchema>;
 export type OpenTabMessage = z.infer<typeof OpenTabMessageSchema>;
 export type DropboxMessage = z.infer<typeof DropboxMessageSchema>;
+
+export type CaptureFile = z.infer<typeof CaptureFileSchema>;
+export type CaptureManifest = z.infer<typeof CaptureManifestSchema>;
+export type CaptureSessionSummary = z.infer<typeof CaptureSessionSummarySchema>;

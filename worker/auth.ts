@@ -1,10 +1,13 @@
 export interface Env {
   DB: D1Database;
+  MEDIA: R2Bucket;
+  ASSETS: Fetcher;
 }
 
 export interface AuthResult {
   keyId: string;
   channelId: string;
+  label: string;
 }
 
 async function hashKey(key: string): Promise<string> {
@@ -24,13 +27,13 @@ export async function authenticate(
   const keyHash = await hashKey(apiKey);
 
   const row = await env.DB.prepare(
-    "SELECT id, channel_id FROM api_keys WHERE key_hash = ? AND revoked_at IS NULL"
+    "SELECT id, channel_id, label FROM api_keys WHERE key_hash = ? AND revoked_at IS NULL"
   )
     .bind(keyHash)
-    .first<{ id: string; channel_id: string }>();
+    .first<{ id: string; channel_id: string; label: string }>();
 
   if (!row) return null;
-  return { keyId: row.id, channelId: row.channel_id };
+  return { keyId: row.id, channelId: row.channel_id, label: row.label ?? "client" };
 }
 
 export { hashKey };

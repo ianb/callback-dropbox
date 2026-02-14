@@ -56,13 +56,18 @@ export async function createChannel(
   return json({ channelId, apiKey }, 201);
 }
 
+export interface CreatePairingCodeParams {
+  request: Request;
+  env: Env;
+  auth: AuthResult;
+  channelId: string;
+}
+
 // POST /channels/:id/pair — generate a pairing code (requires auth)
 export async function createPairingCode(
-  request: Request,
-  env: Env,
-  auth: AuthResult,
-  channelId: string
+  params: CreatePairingCodeParams
 ): Promise<Response> {
+  const { request, env, auth, channelId } = params;
   if (auth.channelId !== channelId) {
     return error("Forbidden", 403);
   }
@@ -88,7 +93,7 @@ export async function redeemPairingCode(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const body = await request.json<{ code: string }>();
+  const body = await request.json<{ code: string; label?: string }>();
   if (!body.code) {
     return error("code is required", 400);
   }
@@ -122,7 +127,7 @@ export async function redeemPairingCode(
     ),
     env.DB.prepare(
       "INSERT INTO api_keys (id, channel_id, key_hash, label, created_at) VALUES (?, ?, ?, ?, ?)"
-    ).bind(keyId, row.channel_id, keyHash, "client", now),
+    ).bind(keyId, row.channel_id, keyHash, body.label || "client", now),
   ]);
 
   return json({
@@ -132,12 +137,17 @@ export async function redeemPairingCode(
   });
 }
 
+export interface GetMessagesParams {
+  request: Request;
+  env: Env;
+  auth: AuthResult;
+}
+
 // GET /messages?since=<iso> — fetch messages (requires auth)
 export async function getMessages(
-  request: Request,
-  env: Env,
-  auth: AuthResult
+  params: GetMessagesParams
 ): Promise<Response> {
+  const { request, env, auth } = params;
   const url = new URL(request.url);
   const since = url.searchParams.get("since");
 
@@ -177,12 +187,17 @@ export async function getMessages(
   return json({ messages });
 }
 
+export interface PostMessageParams {
+  request: Request;
+  env: Env;
+  auth: AuthResult;
+}
+
 // POST /messages — post a message (requires auth)
 export async function postMessage(
-  request: Request,
-  env: Env,
-  auth: AuthResult
+  params: PostMessageParams
 ): Promise<Response> {
+  const { request, env, auth } = params;
   const body = await request.json<{
     sender: string;
     contentType?: string;
@@ -212,12 +227,17 @@ export async function postMessage(
   return json({ id, createdAt: now }, 201);
 }
 
+export interface DeleteMessageParams {
+  env: Env;
+  auth: AuthResult;
+  messageId: string;
+}
+
 // DELETE /messages/:id — delete/ack a message (requires auth)
 export async function deleteMessage(
-  env: Env,
-  auth: AuthResult,
-  messageId: string
+  params: DeleteMessageParams
 ): Promise<Response> {
+  const { env, auth, messageId } = params;
   const result = await env.DB.prepare(
     "DELETE FROM messages WHERE id = ? AND channel_id = ?"
   )
