@@ -26,6 +26,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
   const [audioChunks, setAudioChunks] = useState<AudioChunkStatus[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
   const [flashing, setFlashing] = useState(false);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const isMobile = "ontouchstart" in window;
@@ -38,6 +39,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
   const recordStartRef = useRef<number>(0);
   const galleryRef = useRef<HTMLInputElement>(null);
   const shutterAudioRef = useRef<HTMLAudioElement | null>(null);
+  const finalizedRef = useRef(false);
 
   // Preload shutter sound
   useEffect(() => {
@@ -58,9 +60,10 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
     return () => { cancelled = true; };
   }, []);
 
-  // Finalize on unmount/beforeunload
+  // Finalize on unmount/beforeunload (skipped if already finalized via Done)
   useEffect(() => {
     const handleUnload = () => {
+      if (finalizedRef.current) return;
       if (sessionId && finalizeToken) {
         const url = apiRef.current.buildFinalizeBeaconUrl(sessionId, finalizeToken);
         navigator.sendBeacon(url);
@@ -256,12 +259,6 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
     [sessionId, photoStates.length, uploadPhoto]
   );
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${String(s).padStart(2, "0")}`;
-  };
-
   // Derived upload status
   const photosUploaded = photoStates.filter((s) => s === "uploaded").length;
   const photosUploading = photoStates.filter((s) => s === "uploading").length;
@@ -270,6 +267,32 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
   const audioUploaded = audioChunks.filter((c) => c.state === "uploaded").length;
   const audioUploading = audioChunks.filter((c) => c.state === "uploading").length;
   const audioTotal = audioChunks.length;
+
+  const uploadsInProgress = photosUploading > 0 || audioUploading > 0;
+
+  const handleDone = useCallback(async () => {
+    if (!sessionId || finalizing) return;
+    setFinalizing(true);
+    try {
+      if (recording) {
+        recorderRef.current?.stop();
+        recorderRef.current = null;
+        setRecording(false);
+      }
+      await apiRef.current.finalizeSession(sessionId);
+      finalizedRef.current = true;
+      onDisconnect();
+    } catch (err) {
+      setError(`Finalize failed: ${err instanceof Error ? err.message : "unknown"}`);
+      setFinalizing(false);
+    }
+  }, [sessionId, finalizing, recording, onDisconnect]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
+  };
 
   return (
     <div className="flex flex-col h-full bg-black relative">
@@ -327,7 +350,13 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       {showMenu && (
         <div className="absolute top-12 right-4 bg-gray-800 rounded-lg shadow-lg z-20 py-1">
           <button
-            onClick={() => { setShowMenu(false); onDisconnect(); }}
+            onClick={() => { setShowMenu(false); pickFromGallery(); }}
+            className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+          >
+            Add from gallery
+          </button>
+          <button
+            onClick={() => { setShowMenu(false); handleDone(); }}
             className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700"
           >
             Disconnect
@@ -367,28 +396,32 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
         </div>
       )}
 
+      {/* Hidden gallery input */}
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleGallerySelect}
+      />
+
       {/* Controls */}
       <div className="flex items-center justify-around px-6 py-6 bg-gray-900/80">
-        {/* Gallery picker */}
+        {/* Done button */}
         <button
-          onClick={pickFromGallery}
-          disabled={!sessionId}
-          className="w-10 h-10 rounded-lg border-2 border-gray-500 flex items-center justify-center disabled:opacity-30"
+          onClick={handleDone}
+          disabled={!sessionId || uploadsInProgress || finalizing}
+          className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center disabled:opacity-30 active:bg-green-500"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <path d="M21 15l-5-5L5 21" />
-          </svg>
+          {finalizing ? (
+            <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+          )}
         </button>
-        <input
-          ref={galleryRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={handleGallerySelect}
-        />
 
         {/* Record button */}
         <button
