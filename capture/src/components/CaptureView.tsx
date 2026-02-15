@@ -423,16 +423,21 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
           )}
         </button>
 
-        {/* Record button */}
+        {/* Record button (mic) */}
         <button
           onClick={toggleRecording}
           disabled={!sessionId}
-          className="w-16 h-16 rounded-full border-4 border-white flex items-center justify-center disabled:opacity-30"
+          className={`w-14 h-14 rounded-full border-4 border-white flex items-center justify-center disabled:opacity-30 ${recording ? "bg-red-600" : ""}`}
         >
           {recording ? (
-            <span className="w-7 h-7 bg-red-500 rounded-sm" />
+            <span className="w-6 h-6 bg-white rounded-sm" />
           ) : (
-            <span className="w-11 h-11 bg-red-500 rounded-full" />
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z" />
+              <path d="M17 11a5 5 0 01-10 0H5a7 7 0 0014 0h-2z" />
+              <rect x="11" y="19" width="2" height="3" rx="1" />
+              <rect x="8" y="21" width="8" height="2" rx="1" />
+            </svg>
           )}
         </button>
 
@@ -462,6 +467,19 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+
+        {/* Gallery picker */}
+        <button
+          onClick={pickFromGallery}
+          disabled={!sessionId}
+          className="w-10 h-10 rounded-lg border-2 border-gray-500 flex items-center justify-center disabled:opacity-30"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
           </svg>
         </button>
       </div>
