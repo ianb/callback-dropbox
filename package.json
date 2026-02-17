@@ -12,6 +12,7 @@
     "build:worker": "tsc",
     "build:capture": "vite build",
     "test": "tap test/*.test.ts",
+    "deploy": "npm run build && wrangler deploy",
     "dev": "wrangler dev",
     "dev:capture": "vite dev",
     "typecheck": "tsc --noEmit",
