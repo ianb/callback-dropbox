@@ -281,12 +281,27 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       }
       await apiRef.current.finalizeSession(sessionId);
       finalizedRef.current = true;
-      onDisconnect();
+      // Reset for a new session instead of disconnecting
+      setSessionId(null);
+      setFinalizeToken(null);
+      setPhotoStates([]);
+      setAudioChunks([]);
+      setError(null);
+      setFinalizing(false);
+      finalizedRef.current = false;
+      // Create a new session
+      try {
+        const { sessionId: newId, finalizeToken: newToken } = await apiRef.current.createSession();
+        setSessionId(newId);
+        setFinalizeToken(newToken);
+      } catch (err) {
+        setError(`New session creation failed: ${err instanceof Error ? err.message : "unknown"}`);
+      }
     } catch (err) {
       setError(`Finalize failed: ${err instanceof Error ? err.message : "unknown"}`);
       setFinalizing(false);
     }
-  }, [sessionId, finalizing, recording, onDisconnect]);
+  }, [sessionId, finalizing, recording]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -356,7 +371,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
             Add from gallery
           </button>
           <button
-            onClick={() => { setShowMenu(false); handleDone(); }}
+            onClick={() => { setShowMenu(false); onDisconnect(); }}
             className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700"
           >
             Disconnect
