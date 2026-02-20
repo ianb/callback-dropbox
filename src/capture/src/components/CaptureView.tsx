@@ -49,10 +49,10 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
   // Create session on mount
   useEffect(() => {
     let cancelled = false;
-    apiRef.current.createSession().then(({ sessionId, finalizeToken }) => {
+    apiRef.current.createSession().then(({ sessionId: newSessionId, finalizeToken: newFinalizeToken }) => {
       if (!cancelled) {
-        setSessionId(sessionId);
-        setFinalizeToken(finalizeToken);
+        setSessionId(newSessionId);
+        setFinalizeToken(newFinalizeToken);
       }
     }).catch((err) => {
       if (!cancelled) setError(`Session creation failed: ${err.message}`);
@@ -85,7 +85,6 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       }, 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
-      setRecordingTime(0);
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -107,7 +106,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
   }
 
   const uploadPhoto = useCallback(
-    async ({ sessionId, index, blob, startedAt, source }: UploadPhotoParams) => {
+    async ({ sessionId: uploadSessionId, index, blob, startedAt, source }: UploadPhotoParams) => {
       const ext = blob.type.includes("png") ? "png" : "jpg";
       const filename = `photo-${String(index + 1).padStart(3, "0")}.${ext}`;
       setPhotoStates((prev) => {
@@ -116,7 +115,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
         return next;
       });
       try {
-        await apiRef.current.uploadFile({ sessionId, filename, blob, startedAt, source });
+        await apiRef.current.uploadFile({ sessionId: uploadSessionId, filename, blob, startedAt, source });
         setPhotoStates((prev) => {
           const next = [...prev];
           next[index] = "uploaded";
@@ -165,6 +164,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       recorderRef.current?.stop();
       recorderRef.current = null;
       setRecording(false);
+      setRecordingTime(0);
     } else {
       try {
         const recorder = new ChunkedRecorder({ onChunk: handleChunk });
@@ -303,6 +303,24 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
     }
   }, [sessionId, finalizing, recording]);
 
+  const toggleShowMenu = useCallback(() => {
+    setShowMenu((prev) => !prev);
+  }, []);
+
+  const handleMenuGallery = useCallback(() => {
+    setShowMenu(false);
+    pickFromGallery();
+  }, [pickFromGallery]);
+
+  const handleMenuDisconnect = useCallback(() => {
+    setShowMenu(false);
+    onDisconnect();
+  }, [onDisconnect]);
+
+  const handleClearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -314,12 +332,10 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       {/* Status bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-gray-900/80 z-10">
         <div className="flex items-center gap-3">
-          {recording && (
-            <div className="flex items-center gap-2">
+          {recording ? <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
               <span className="text-sm font-mono">{formatTime(recordingTime)}</span>
-            </div>
-          )}
+            </div> : null}
           {!recording && audioTotal > 0 && (
             <div className="flex items-center gap-1.5 text-sm">
               {audioUploading > 0 ? (
@@ -353,7 +369,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
             </div>
           )}
           <button
-            onClick={() => setShowMenu(!showMenu)}
+            onClick={toggleShowMenu}
             className="text-gray-400 hover:text-white p-1"
           >
             &#8942;
@@ -362,22 +378,20 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       </div>
 
       {/* Menu dropdown */}
-      {showMenu && (
-        <div className="absolute top-12 right-4 bg-gray-800 rounded-lg shadow-lg z-20 py-1">
+      {showMenu ? <div className="absolute top-12 right-4 bg-gray-800 rounded-lg shadow-lg z-20 py-1">
           <button
-            onClick={() => { setShowMenu(false); pickFromGallery(); }}
+            onClick={handleMenuGallery}
             className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
           >
             Add from gallery
           </button>
           <button
-            onClick={() => { setShowMenu(false); onDisconnect(); }}
+            onClick={handleMenuDisconnect}
             className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700"
           >
             Disconnect
           </button>
-        </div>
-      )}
+        </div> : null}
 
       {/* Viewfinder — tap to take photo */}
       <div
@@ -399,17 +413,15 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       </div>
 
       {/* Error display */}
-      {error && (
-        <div className="absolute top-14 left-4 right-4 bg-red-900/80 text-red-200 text-sm px-3 py-2 rounded-lg">
+      {error ? <div className="absolute top-14 left-4 right-4 bg-red-900/80 text-red-200 text-sm px-3 py-2 rounded-lg">
           {error}
           <button
-            onClick={() => setError(null)}
+            onClick={handleClearError}
             className="float-right text-red-300 hover:text-white"
           >
             &times;
           </button>
-        </div>
-      )}
+        </div> : null}
 
       {/* Hidden gallery input */}
       <input

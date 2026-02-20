@@ -59,7 +59,7 @@ export class ChunkedRecorder {
       this.mediaRecorder.stop();
     }
     if (this.stream) {
-      this.stream.getTracks().forEach((t) => t.stop());
+      for (const t of this.stream.getTracks()) t.stop();
       this.stream = null;
     }
     this.mediaRecorder = null;

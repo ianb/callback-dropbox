@@ -1,4 +1,4 @@
-import { type Env, type AuthResult, authenticate, hashKey } from "./auth.js";
+import { type Env, type AuthResult, hashKey } from "./auth.js";
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {

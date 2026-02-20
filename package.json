@@ -16,10 +16,10 @@
     "dev": "wrangler dev",
     "dev:capture": "vite dev",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint worker/ client/ capture/",
+    "lint": "eslint src/",
     "lint:oxlint": "oxlint -A no-unused-vars",
     "lint:knip": "knip",
-    "lint:circular": "madge --circular --extensions ts,tsx worker/ client/ capture/",
+    "lint:circular": "madge --circular --extensions ts,tsx src/",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -61,7 +61,7 @@
     "zod": "^4.3.6"
   },
   "lint-staged": {
-    "{worker,client,capture}/**/*.{ts,tsx}": [
+    "src/**/*.{ts,tsx}": [
       "eslint"
     ]
   }

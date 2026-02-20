@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  root: "capture",
+  root: "src/capture",
   plugins: [react()],
   build: {
     outDir: "dist",

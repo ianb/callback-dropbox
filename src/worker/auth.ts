@@ -13,7 +13,7 @@ export interface AuthResult {
 async function hashKey(key: string): Promise<string> {
   const encoded = new TextEncoder().encode(key);
   const hash = await crypto.subtle.digest("SHA-256", encoded);
-  return btoa(String.fromCharCode(...new Uint8Array(hash)));
+  return btoa(String.fromCodePoint(...new Uint8Array(hash)));
 }
 
 export async function authenticate(

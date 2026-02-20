@@ -5,7 +5,7 @@ import {
   importKey,
   encrypt,
   decrypt,
-} from "../client/crypto.js";
+} from "../src/client/crypto.js";
 
 t.test("generateChannelKey produces an AES-GCM key", async (t) => {
   const key = await generateChannelKey();

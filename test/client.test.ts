@@ -1,6 +1,6 @@
 import t from "tap";
-import { DropboxClient } from "../client/client.js";
-import { generateChannelKey, exportKey, encrypt } from "../client/crypto.js";
+import { DropboxClient } from "../src/client/client.js";
+import { generateChannelKey, exportKey, encrypt } from "../src/client/crypto.js";
 
 // Mock fetch for client tests
 function mockFetch(responses: Map<string, { status: number; body: unknown }>) {

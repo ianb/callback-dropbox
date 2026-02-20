@@ -1,6 +1,6 @@
 import { vibeCheck } from "@ianbicking/personal-vibe-check/eslint";
 export default [
-  ...vibeCheck({ react: true, ignores: ["capture/dist/**"] }),
+  ...vibeCheck({ react: true, ignores: ["src/capture/dist/**"] }),
   {
     rules: {
       "no-optional-chaining/no-optional-chaining": "off",

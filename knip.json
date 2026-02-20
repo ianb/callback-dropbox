@@ -1,9 +1,9 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
   "entry": [
-    "worker/index.ts",
-    "client/client.ts",
-    "capture/main.tsx"
+    "src/worker/index.ts",
+    "src/client/index.ts",
+    "src/capture/src/main.tsx"
   ],
   "project": [
     "src/**/*.{ts,tsx}"
@@ -11,6 +11,10 @@
   "exclude": [
     "enumMembers",
     "duplicates",
-    "types"
+    "types",
+    "exports"
+  ],
+  "ignoreDependencies": [
+    "@ianbicking/personal-vibe-check"
   ]
 }

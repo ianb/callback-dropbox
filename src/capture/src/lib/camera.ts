@@ -82,7 +82,7 @@ export class CameraCapture {
 
   private stopStream(): void {
     if (this.stream) {
-      this.stream.getTracks().forEach((t) => t.stop());
+      for (const t of this.stream.getTracks()) t.stop();
       this.stream = null;
     }
   }

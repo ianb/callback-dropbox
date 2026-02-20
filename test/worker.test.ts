@@ -1,5 +1,5 @@
 import t from "tap";
-
+import worker from "../src/worker/index.js";
 // We test the worker by importing the route handlers and mocking the D1 binding.
 // This avoids needing a full wrangler environment for unit tests.
 
@@ -93,9 +93,6 @@ function createMockDB() {
     },
   };
 }
-
-// Import the worker handler
-import worker from "../worker/index.js";
 
 function makeEnv(db: ReturnType<typeof createMockDB>) {
   return { DB: db as unknown as D1Database };
