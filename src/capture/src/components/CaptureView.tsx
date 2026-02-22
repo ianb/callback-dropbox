@@ -41,6 +41,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
   const shutterAudioRef = useRef<HTMLAudioElement | null>(null);
   const recordStartAudioRef = useRef<HTMLAudioElement | null>(null);
   const recordStopAudioRef = useRef<HTMLAudioElement | null>(null);
+  const doneAudioRef = useRef<HTMLAudioElement | null>(null);
   const finalizedRef = useRef(false);
 
   // Preload sounds
@@ -48,6 +49,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
     shutterAudioRef.current = new Audio("/shutter.mp3");
     recordStartAudioRef.current = new Audio("/recording-start.mp3");
     recordStopAudioRef.current = new Audio("/recording-stop.mp3");
+    doneAudioRef.current = new Audio("/done.wav");
   }, []);
 
   // Create session on mount
@@ -287,6 +289,7 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       }
       await apiRef.current.finalizeSession(sessionId);
       finalizedRef.current = true;
+      doneAudioRef.current?.play().catch(() => {});
       // Reset for a new session instead of disconnecting
       setSessionId(null);
       setFinalizeToken(null);
