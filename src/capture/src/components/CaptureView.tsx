@@ -39,11 +39,15 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
   const recordStartRef = useRef<number>(0);
   const galleryRef = useRef<HTMLInputElement>(null);
   const shutterAudioRef = useRef<HTMLAudioElement | null>(null);
+  const recordStartAudioRef = useRef<HTMLAudioElement | null>(null);
+  const recordStopAudioRef = useRef<HTMLAudioElement | null>(null);
   const finalizedRef = useRef(false);
 
-  // Preload shutter sound
+  // Preload sounds
   useEffect(() => {
     shutterAudioRef.current = new Audio("/shutter.mp3");
+    recordStartAudioRef.current = new Audio("/recording-start.mp3");
+    recordStopAudioRef.current = new Audio("/recording-stop.mp3");
   }, []);
 
   // Create session on mount
@@ -165,12 +169,14 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
       recorderRef.current = null;
       setRecording(false);
       setRecordingTime(0);
+      recordStopAudioRef.current?.play().catch(() => {});
     } else {
       try {
         const recorder = new ChunkedRecorder({ onChunk: handleChunk });
         recorderRef.current = recorder;
         await recorder.start();
         setRecording(true);
+        recordStartAudioRef.current?.play().catch(() => {});
       } catch (err) {
         setError(`Microphone access failed: ${err instanceof Error ? err.message : "unknown"}`);
       }
