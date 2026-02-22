@@ -117,4 +117,17 @@ export class DropboxClient {
       method: "DELETE",
     });
   }
+
+  async listChannelKeys(channelId: string): Promise<ChannelKey[]> {
+    const res = await this.request(`/channels/${encodeURIComponent(channelId)}/keys`);
+    const { keys } = (await res.json()) as { keys: ChannelKey[] };
+    return keys;
+  }
+}
+
+export interface ChannelKey {
+  id: string;
+  label: string;
+  createdAt: string;
+  active: boolean;
 }

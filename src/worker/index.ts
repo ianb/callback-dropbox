@@ -3,6 +3,7 @@ import {
   createChannel,
   createPairingCode,
   redeemPairingCode,
+  listKeys,
   getMessages,
   postMessage,
   deleteMessage,
@@ -61,6 +62,10 @@ async function handleAuthedRoute(
   const pairMatch = pathname.match(/^\/channels\/([^/]+)\/pair$/);
   if (method === "POST" && pairMatch) {
     return createPairingCode({ request, env, auth, channelId: pairMatch[1] });
+  }
+  const keysMatch = pathname.match(/^\/channels\/([^/]+)\/keys$/);
+  if (method === "GET" && keysMatch) {
+    return listKeys({ env, auth, channelId: keysMatch[1] });
   }
   if (method === "GET" && pathname === "/messages") {
     return getMessages({ request, env, auth });

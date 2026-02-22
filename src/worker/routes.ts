@@ -137,6 +137,40 @@ export async function redeemPairingCode(
   });
 }
 
+export interface ListKeysParams {
+  env: Env;
+  auth: AuthResult;
+  channelId: string;
+}
+
+// GET /channels/:id/keys — list API keys on a channel (requires auth)
+export async function listKeys(params: ListKeysParams): Promise<Response> {
+  const { env, auth, channelId } = params;
+  if (auth.channelId !== channelId) {
+    return error("Forbidden", 403);
+  }
+
+  const { results } = await env.DB.prepare(
+    "SELECT id, label, created_at, revoked_at FROM api_keys WHERE channel_id = ? ORDER BY created_at ASC"
+  )
+    .bind(channelId)
+    .all<{
+      id: string;
+      label: string | null;
+      created_at: string;
+      revoked_at: string | null;
+    }>();
+
+  const keys = results.map((row) => ({
+    id: row.id,
+    label: row.label ?? "client",
+    createdAt: row.created_at,
+    active: !row.revoked_at,
+  }));
+
+  return json({ keys });
+}
+
 export interface GetMessagesParams {
   request: Request;
   env: Env;

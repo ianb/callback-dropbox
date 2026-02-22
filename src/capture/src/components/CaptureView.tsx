@@ -385,6 +385,9 @@ export default function CaptureView({ credentials, onDisconnect }: Props) {
           >
             Add from gallery
           </button>
+          <div className="px-4 py-2 text-xs text-gray-500 border-t border-gray-700">
+            Channel: {credentials.channelId.slice(0, 8)}…
+          </div>
           <button
             onClick={handleMenuDisconnect}
             className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700"

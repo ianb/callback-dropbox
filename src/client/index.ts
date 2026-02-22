@@ -3,6 +3,7 @@ export type {
   DropboxClientOptions,
   DecryptedMessage,
   EncryptedMessage,
+  ChannelKey,
 } from "./client.js";
 
 export { CaptureClient } from "./capture-client.js";
